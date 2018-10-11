@@ -42,8 +42,9 @@ contract('PropertyRegistry Contract Tests', function(accounts) {
   it('should allow guest to request dates', async () => {
     const checkIn = new Date(2018, 09, 1).getTime() / 1000;
     const checkOut = new Date(2018, 09, 15).getTime() / 1000;
+    const token = await property.tokenOfOwnerByIndex(alice, 0);
     try {
-      await propertyRegistry.request(1, checkIn, checkOut, {from: bob})
+      await propertyRegistry.request(token, checkIn, checkOut, {from: bob})
       assert(true);
     } catch(e) {
       assert(false);
@@ -53,8 +54,9 @@ contract('PropertyRegistry Contract Tests', function(accounts) {
   it('should not allow guest to request same property', async () => {
     const checkIn = new Date(2018, 09, 10).getTime() / 1000;
     const checkOut = new Date(2018, 09, 15).getTime() / 1000;
+    const token = await property.tokenOfOwnerByIndex(alice, 0);
     try {
-      await propertyRegistry.request(1, checkIn, checkOut, {from: eve})
+      await propertyRegistry.request(token, checkIn, checkOut, {from: eve})
       assert(false);
     } catch(e) {
       assert(true);
@@ -62,24 +64,36 @@ contract('PropertyRegistry Contract Tests', function(accounts) {
   });
 
   it('should allow owner to approve a guest', async () => {
+    const token = await property.tokenOfOwnerByIndex(alice, 0);
     try {
-      await propertyRegistry.approveRequest(1, {from: alice})
+      await propertyRegistry.approveRequest(token, {from: alice})
     } catch(e) {
       assert(false);
     }
   });
 
+  it('should allow alice to mint Property Token for bob', async () => {
+    const allocation = 500;
+    const tx = await propertyToken.mint(bob, allocation);
+    const balance = await propertyToken.balanceOf.call(bob);
+    assert(balance.toNumber() === allocation, 'balance');
+  });
+
   it('should allow guest to check in after approved', async () => {
+    const token = await property.tokenOfOwnerByIndex(alice, 0);
     try {
-      await propertyRegistry.checkIn(1, {from: bob})
+      await propertyToken.approve(propertyRegistry.address, 100, { from: bob });
+      await propertyRegistry.checkIn(token, {from: bob})
     } catch(e) {
+      console.log(e);
       assert(false);
     }
   });
 
   it('should not allow another guest to check in to same property', async () => {
+    const token = await property.tokenOfOwnerByIndex(alice, 0);
     try {
-      await propertyRegistry.checkIn(1, {from: eve})
+      await propertyRegistry.checkIn(token, {from: eve})
       assert(false);
     } catch(e) {
       assert(true);
@@ -87,8 +101,9 @@ contract('PropertyRegistry Contract Tests', function(accounts) {
   });
 
   it('should allow guest to check out', async () => {
+    const token = await property.tokenOfOwnerByIndex(alice, 0);
     try {
-      await propertyRegistry.checkOut(1, {from: bob})
+      await propertyRegistry.checkOut(token, {from: bob})
     } catch(e) {
       assert(false);
     }
@@ -97,18 +112,17 @@ contract('PropertyRegistry Contract Tests', function(accounts) {
   it('should allow another guest to request same property once checked out', async () => {
     const checkIn = new Date(2018, 09, 10).getTime() / 1000;
     const checkOut = new Date(2018, 09, 15).getTime() / 1000;
+    const token = await property.tokenOfOwnerByIndex(alice, 0);
     try {
-      await propertyRegistry.request(1, checkIn, checkOut, {from: eve})
+      await propertyRegistry.request(token, checkIn, checkOut, {from: eve})
     } catch(e) {
       assert(false);
     }
   });
 
-  it('should allow alice to mint Property Token for bob', async () => {
-    const allocation = 10;
-    const tx = await propertyToken.mint(bob, allocation);
-    const balance = await propertyToken.balanceOf.call(bob);
-    assert(balance.toNumber() === allocation, 'balance');
+  it('should allow bob to approve the property registry to use his tokens', async () => {
+    const tx = await propertyToken.approve(propertyRegistry.address, 100, { from: bob });
+    assert(tx !== undefined, 'property registry has not been approved');
   });
 
 });

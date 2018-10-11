@@ -51,16 +51,19 @@ contract PropertyRegistry {
   function checkIn(uint256 _tokenId) external {
     require(msg.sender == stayData[_tokenId].occupant);
     require(now >= stayData[_tokenId].checkInDate);
+    require(stayData[_tokenId].approved == true);
+    require(propertyToken.transferFrom(msg.sender, this, stayData[_tokenId].price));
     stayData[_tokenId].checkedIn = true;
   }
 
   function checkOut(uint256 _tokenId) external {
     require(msg.sender == stayData[_tokenId].occupant);
+    require(propertyToken.transfer(property.ownerOf(_tokenId), stayData[_tokenId].price));
     stayData[_tokenId].checkedIn = false;
     stayData[_tokenId].checkInDate = 0;
     stayData[_tokenId].checkOutDate = 0;
     stayData[_tokenId].approved = false;
-    stayData[_tokenId].occupant = 0;
+    stayData[_tokenId].occupant = address(0);
   }
 
 }
