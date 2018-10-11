@@ -1,17 +1,21 @@
 const Property = artifacts.require("./Property.sol");
 const PropertyRegistry = artifacts.require("./PropertyRegistry.sol");
+const PropertyToken = artifacts.require("./PropertyToken.sol");
 
 contract('PropertyRegistry Contract Tests', function(accounts) {
 
   let propertyRegistry;
   let property;
+  let propertyToken;
   const alice = accounts[0], bob = accounts[1], eve = accounts[2];
 
   it('should be deployed, Property Registry', async () => {
     property = await Property.deployed();
-    propertyRegistry = await PropertyRegistry.new(property.address, 0);
+    propertyToken = await PropertyToken.deployed();
+    propertyRegistry = await PropertyRegistry.new(property.address, propertyToken.address);
     assert(propertyRegistry !== undefined, 'Property registry was NOT deployed');
     assert(property !== undefined, 'Property was NOT deployed');
+    assert(propertyToken !== undefined, 'Property token was NOT deployed');
   });
 
   it('should allow alice to register a property', async () => {
@@ -98,6 +102,13 @@ contract('PropertyRegistry Contract Tests', function(accounts) {
     } catch(e) {
       assert(false);
     }
+  });
+
+  it('should allow alice to mint Property Token for bob', async () => {
+    const allocation = 10;
+    const tx = await propertyToken.mint(bob, allocation);
+    const balance = await propertyToken.balanceOf.call(bob);
+    assert(balance.toNumber() === allocation, 'balance');
   });
 
 });
