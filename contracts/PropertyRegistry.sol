@@ -15,11 +15,15 @@ contract PropertyRegistry {
   struct Data {
     uint256 price;
     uint256 stays;
+    address[] requested;
+    address[] approved;
     address occupant;
-    uint256 checkInDate;
-    uint256 checkOutDate;
-    bool approved;
-    bool checkedIn;
+    mapping(address => Request) requests;
+  }
+
+  struct Request {
+    uint256 checkIn;
+    uint256 checkOut;
   }
 
   modifier onlyOwner(uint256 _tokenId) {
@@ -33,37 +37,45 @@ contract PropertyRegistry {
   }
 
   function registerProperty(uint256 _tokenId, uint256 _price) external onlyOwner(_tokenId) {
-    stayData[_tokenId] = Data(_price, 0, address(0),0,0,false,false);
+    stayData[_tokenId] = Data(_price, 0, new address[](0),new address[](0), address(0));
   }
 
   function request(uint256 _tokenId, uint256 _checkIn, uint256 _checkOut) external {
-    require(stayData[_tokenId].checkInDate == 0);
-    stayData[_tokenId].checkInDate = _checkIn;
-    stayData[_tokenId].checkOutDate = _checkOut;
-    stayData[_tokenId].approved = false;
-    stayData[_tokenId].occupant = msg.sender;
+    uint arrayLength = stayData[_tokenId].requested.length;
+    for (uint i=0; i<arrayLength; i++) {
+      uint256 checkIn = stayData[_tokenId].requests[stayData[_tokenId].requested[i]].checkIn;
+      uint256 checkOut = stayData[_tokenId].requests[stayData[_tokenId].requested[i]].checkOut;
+      require(((_checkIn < checkIn) && (_checkOut < checkIn)) || ((_checkIn > checkOut) && (_checkOut > checkOut)));
+    }
+
+    stayData[_tokenId].requested.push(msg.sender);
+    stayData[_tokenId].requests[msg.sender] = Request(_checkIn, _checkOut);
   }
 
-  function approveRequest(uint256 _tokenId) external onlyOwner(_tokenId) {
-    stayData[_tokenId].approved = true;
+  function approveRequest(uint256 _tokenId, address _guest) external onlyOwner(_tokenId) {
+    stayData[_tokenId].approved.push(_guest);
   }
 
   function checkIn(uint256 _tokenId) external {
-    require(msg.sender == stayData[_tokenId].occupant);
-    require(now >= stayData[_tokenId].checkInDate);
-    require(stayData[_tokenId].approved == true);
+    uint arrayLength = stayData[_tokenId].approved.length;
+    bool guestApproved = false;
+    for (uint i=0; i<arrayLength; i++) {
+      if (stayData[_tokenId].approved[i] == msg.sender) {
+        guestApproved = now >= stayData[_tokenId].requests[msg.sender].checkIn;
+        break;
+      }
+    }
+    require(guestApproved);
     require(propertyToken.transferFrom(msg.sender, this, stayData[_tokenId].price));
-    stayData[_tokenId].checkedIn = true;
+    stayData[_tokenId].occupant = msg.sender;
+    delete stayData[_tokenId].requests[msg.sender];
   }
 
   function checkOut(uint256 _tokenId) external {
     require(msg.sender == stayData[_tokenId].occupant);
     require(propertyToken.transfer(property.ownerOf(_tokenId), stayData[_tokenId].price));
-    stayData[_tokenId].checkedIn = false;
-    stayData[_tokenId].checkInDate = 0;
-    stayData[_tokenId].checkOutDate = 0;
-    stayData[_tokenId].approved = false;
     stayData[_tokenId].occupant = address(0);
+    stayData[_tokenId].stays++;
   }
 
 }

@@ -45,28 +45,37 @@ contract('PropertyRegistry Contract Tests', function(accounts) {
     const token = await property.tokenOfOwnerByIndex(alice, 0);
     try {
       await propertyRegistry.request(token, checkIn, checkOut, {from: bob})
-      assert(true);
     } catch(e) {
       assert(false);
     }
   });
 
-  it('should not allow guest to request same property', async () => {
+  it('should not allow guest to request same property on overlapping dates', async () => {
     const checkIn = new Date(2018, 09, 10).getTime() / 1000;
-    const checkOut = new Date(2018, 09, 15).getTime() / 1000;
+    const checkOut = new Date(2018, 09, 18).getTime() / 1000;
     const token = await property.tokenOfOwnerByIndex(alice, 0);
     try {
       await propertyRegistry.request(token, checkIn, checkOut, {from: eve})
-      assert(false);
     } catch(e) {
       assert(true);
+    }
+  });
+
+  it('should allow guest to request same property on different dates', async () => {
+    const checkIn = new Date(2018, 09, 16).getTime() / 1000;
+    const checkOut = new Date(2018, 09, 18).getTime() / 1000;
+    const token = await property.tokenOfOwnerByIndex(alice, 0);
+    try {
+      await propertyRegistry.request(token, checkIn, checkOut, {from: eve})
+    } catch(e) {
+      assert(false);
     }
   });
 
   it('should allow owner to approve a guest', async () => {
     const token = await property.tokenOfOwnerByIndex(alice, 0);
     try {
-      await propertyRegistry.approveRequest(token, {from: alice})
+      await propertyRegistry.approveRequest(token, bob, {from: alice})
     } catch(e) {
       assert(false);
     }
