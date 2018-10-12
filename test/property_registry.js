@@ -94,7 +94,6 @@ contract('PropertyRegistry Contract Tests', function(accounts) {
       await propertyToken.approve(propertyRegistry.address, 100, { from: bob });
       await propertyRegistry.checkIn(token, {from: bob})
     } catch(e) {
-      console.log(e);
       assert(false);
     }
   });
@@ -111,22 +110,16 @@ contract('PropertyRegistry Contract Tests', function(accounts) {
 
   it('should allow guest to check out', async () => {
     const token = await property.tokenOfOwnerByIndex(alice, 0);
-    try {
-      await propertyRegistry.checkOut(token, {from: bob})
-    } catch(e) {
-      assert(false);
-    }
+    const tx = await propertyRegistry.checkOut(token, {from: bob})
+    assert(tx !== undefined, 'Guest was not able to check out');
   });
 
   it('should allow another guest to request same property once checked out', async () => {
     const checkIn = new Date(2018, 09, 10).getTime() / 1000;
     const checkOut = new Date(2018, 09, 15).getTime() / 1000;
     const token = await property.tokenOfOwnerByIndex(alice, 0);
-    try {
-      await propertyRegistry.request(token, checkIn, checkOut, {from: eve})
-    } catch(e) {
-      assert(false);
-    }
+    const tx = await propertyRegistry.request(token, checkIn, checkOut, {from: eve})
+    assert(tx !== undefined, 'Another guest was not able to request the property');
   });
 
   it('should allow bob to approve the property registry to use his tokens', async () => {

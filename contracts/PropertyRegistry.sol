@@ -31,32 +31,7 @@ contract PropertyRegistry {
     _;
   }
 
-  constructor(address _property, address _propertyToken) public {
-    property = ERC721Basic(_property);
-    propertyToken = ERC20(_propertyToken);
-  }
-
-  function registerProperty(uint256 _tokenId, uint256 _price) external onlyOwner(_tokenId) {
-    stayData[_tokenId] = Data(_price, 0, new address[](0),new address[](0), address(0));
-  }
-
-  function request(uint256 _tokenId, uint256 _checkIn, uint256 _checkOut) external {
-    uint arrayLength = stayData[_tokenId].requested.length;
-    for (uint i=0; i<arrayLength; i++) {
-      uint256 checkIn = stayData[_tokenId].requests[stayData[_tokenId].requested[i]].checkIn;
-      uint256 checkOut = stayData[_tokenId].requests[stayData[_tokenId].requested[i]].checkOut;
-      require(((_checkIn < checkIn) && (_checkOut < checkIn)) || ((_checkIn > checkOut) && (_checkOut > checkOut)));
-    }
-
-    stayData[_tokenId].requested.push(msg.sender);
-    stayData[_tokenId].requests[msg.sender] = Request(_checkIn, _checkOut);
-  }
-
-  function approveRequest(uint256 _tokenId, address _guest) external onlyOwner(_tokenId) {
-    stayData[_tokenId].approved.push(_guest);
-  }
-
-  function checkIn(uint256 _tokenId) external {
+  modifier approvedGuest(uint256 _tokenId) {
     uint arrayLength = stayData[_tokenId].approved.length;
     bool guestApproved = false;
     for (uint i=0; i<arrayLength; i++) {
@@ -66,6 +41,38 @@ contract PropertyRegistry {
       }
     }
     require(guestApproved);
+    _;
+  }
+
+  modifier availableDates(uint256 _tokenId, uint256  _checkIn, uint256  _checkOut) {
+    uint arrayLength = stayData[_tokenId].requested.length;
+    for (uint i=0; i<arrayLength; i++) {
+      uint256 checkIn = stayData[_tokenId].requests[stayData[_tokenId].requested[i]].checkIn;
+      uint256 checkOut = stayData[_tokenId].requests[stayData[_tokenId].requested[i]].checkOut;
+      require(((_checkIn < checkIn) && (_checkOut < checkIn)) || ((_checkIn > checkOut) && (_checkOut > checkOut)));
+    }
+    _;
+  }
+
+  constructor(address _property, address _propertyToken) public {
+    property = ERC721Basic(_property);
+    propertyToken = ERC20(_propertyToken);
+  }
+
+  function registerProperty(uint256 _tokenId, uint256 _price) external onlyOwner(_tokenId) {
+    stayData[_tokenId] = Data(_price, 0, new address[](0),new address[](0), address(0));
+  }
+
+  function request(uint256 _tokenId, uint256 _checkIn, uint256 _checkOut) external availableDates(_tokenId, _checkIn, _checkOut) {
+    stayData[_tokenId].requested.push(msg.sender);
+    stayData[_tokenId].requests[msg.sender] = Request(_checkIn, _checkOut);
+  }
+
+  function approveRequest(uint256 _tokenId, address _guest) external onlyOwner(_tokenId) {
+    stayData[_tokenId].approved.push(_guest);
+  }
+
+  function checkIn(uint256 _tokenId) external approvedGuest(_tokenId) {
     require(propertyToken.transferFrom(msg.sender, this, stayData[_tokenId].price));
     stayData[_tokenId].occupant = msg.sender;
     delete stayData[_tokenId].requests[msg.sender];
