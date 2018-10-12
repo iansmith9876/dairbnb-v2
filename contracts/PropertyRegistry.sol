@@ -26,6 +26,12 @@ contract PropertyRegistry {
     uint256 checkOut;
   }
 
+  event Registered(uint256 indexed _tokenId);
+  event Approved(uint256 indexed _tokenId);
+  event Requested(uint256 indexed _tokenId);
+  event CheckIn(uint256 indexed _tokenId);
+  event CheckOut(uint256 indexed _tokenId);
+
   modifier onlyOwner(uint256 _tokenId) {
     require(property.ownerOf(_tokenId) == msg.sender);
     _;
@@ -61,21 +67,25 @@ contract PropertyRegistry {
 
   function registerProperty(uint256 _tokenId, uint256 _price) external onlyOwner(_tokenId) {
     stayData[_tokenId] = Data(_price, 0, new address[](0),new address[](0), address(0));
+    emit Registered(_tokenId);
   }
 
   function request(uint256 _tokenId, uint256 _checkIn, uint256 _checkOut) external availableDates(_tokenId, _checkIn, _checkOut) {
     stayData[_tokenId].requested.push(msg.sender);
     stayData[_tokenId].requests[msg.sender] = Request(_checkIn, _checkOut);
+    emit Requested(_tokenId);
   }
 
   function approveRequest(uint256 _tokenId, address _guest) external onlyOwner(_tokenId) {
     stayData[_tokenId].approved.push(_guest);
+    emit Approved(_tokenId);
   }
 
   function checkIn(uint256 _tokenId) external approvedGuest(_tokenId) {
     require(propertyToken.transferFrom(msg.sender, this, stayData[_tokenId].price));
     stayData[_tokenId].occupant = msg.sender;
     delete stayData[_tokenId].requests[msg.sender];
+    emit CheckIn(_tokenId);
   }
 
   function checkOut(uint256 _tokenId) external {
@@ -83,6 +93,7 @@ contract PropertyRegistry {
     require(propertyToken.transfer(property.ownerOf(_tokenId), stayData[_tokenId].price));
     stayData[_tokenId].occupant = address(0);
     stayData[_tokenId].stays++;
+    emit CheckOut(_tokenId);
   }
 
 }
