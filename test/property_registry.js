@@ -12,7 +12,7 @@ contract('PropertyRegistry Contract Tests', function(accounts) {
   it('should be deployed, Property Registry', async () => {
     property = await Property.deployed();
     propertyToken = await PropertyToken.deployed();
-    propertyRegistry = await PropertyRegistry.new(property.address, propertyToken.address);
+    propertyRegistry = await PropertyRegistry.deployed();
     assert(propertyRegistry !== undefined, 'Property registry was NOT deployed.');
     assert(property !== undefined, 'Property was NOT deployed.');
     assert(propertyToken !== undefined, 'Property token was NOT deployed.');
