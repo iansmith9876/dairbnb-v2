@@ -31,6 +31,7 @@ async function setContracts() {
         from: alice,
         gas: 250000
       });
+      await registerProperty(tx.logs[0].args._tokenId);
       console.log('Property Created for Alice');
     } catch(e) {
       console.log(e);
@@ -63,7 +64,6 @@ async function setContracts() {
 
   async function handleEvent(res) {
     if (res.event == "Transfer") {
-      await registerProperty(res.args._tokenId);
       getStayData(res.args._tokenId);
     }
   }
@@ -81,11 +81,15 @@ async function setContracts() {
         requestElement = document.createElement("p");
         requestElement.className = "request";
         requestElement.innerHTML = "Request " + element;
-        propertyDiv.appendChild(requestElement);
+        propertyDiv.appendChild(priceElement);
       });
+      priceElement = document.createElement("p");
+      priceElement.className = "price";
+      priceElement.innerHTML = "Price " + tx[0];
+      propertyDiv.appendChild(priceElement);
       document.querySelector('#property-list').appendChild(propertyDiv);
       console.log(tx);
-      // console.log('Got stay data for Alice');
+      console.log('Got stay data for Alice');
     } catch(e) {
       // console.log(e);
       alert('Error getting stay data', e)
@@ -94,7 +98,7 @@ async function setContracts() {
 
   async function registerProperty(tokenId) {
     try {
-      const tx = await propertyRegistryContract.registerProperty(tokenId, 100, {from: alice, gas: 250000});
+      const tx = await propertyRegistryContract.registerProperty(tokenId, 150, {from: alice, gas: 250000});
       console.log('Property Registered for Alice');
     } catch(e) {
       console.log(e);
