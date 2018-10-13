@@ -2,12 +2,20 @@
 %html
   %head
     %title Dairbnb
+    %link{href: "app/stylesheets/main.css", rel: "stylesheet", type: "text/css"}
     %script{src: "app/javascript/web3.js-0.20.6/dist/web3.js"}
     %script{src: "/node_modules/truffle-contract/dist/truffle-contract.js"}
 
   %body
-    %nav Dairbnb
+    %nav
+      %span.brand Dairbnb
     %section.container
       %button#create-property Create Property
+    %section.container
+      %h2 Owned Properties
+      %div#property-list
+
+    %section.container
+      %button#request-property Request Property
 
     %script{src: "/app/javascript/main.js"}
