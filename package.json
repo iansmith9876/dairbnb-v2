@@ -1,0 +1,9 @@
+{
+  "main": "index.js",
+  "dependencies": {
+    "consolidate": "^0.15.1",
+    "express": "^4.16.4",
+    "hamljs": "^0.6.2",
+    "truffle-contract": "^3.0.6"
+  }
+}
