@@ -9,8 +9,14 @@
   %body
     %nav
       %span.brand Dairbnb
+
     %section.container
+      %label Name
+      %input#property-name
+      %label Price
+      %input#property-price
       %button#create-property Create Property
+
     %section.container
       %h2 My Properties
       %div#property-list
@@ -18,6 +24,8 @@
     %section.container
       %h2 Browse Properties
       %div#property-list
+      %label Property
+      %input#property-id
       %button#request-property Request Property
 
     %script{src: "/app/javascript/main.js"}

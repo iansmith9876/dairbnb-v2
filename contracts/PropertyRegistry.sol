@@ -107,3 +107,21 @@ contract PropertyRegistry {
   }
 
 }
+
+
+
+ // struct Data {
+ //    uint256 price;
+ //    uint256 stays;
+ //    address[] requested;
+ //    address[] approved;
+ //    address occupant;
+ //    Request[] requests;
+ //    mapping(uint256 => address) requestOwner;
+ //  }
+
+ //  struct Request {
+ //    uint256 checkIn;
+ //    uint256 checkOut;
+ //  }
+

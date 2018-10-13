@@ -26,12 +26,13 @@ async function setContracts() {
   propertyRegistryContract = await getContract(jsonPropertyRegistry);
 
   document.querySelector('#create-property').onclick = async () => {
+    const price = document.querySelector('#property-price').value;
     try {
       const tx = await propertyContract.createProperty({
         from: alice,
         gas: 250000
       });
-      await registerProperty(tx.logs[0].args._tokenId);
+      await registerProperty(tx.logs[0].args._tokenId, price);
       console.log('Property Created for Alice');
     } catch(e) {
       console.log(e);
@@ -40,12 +41,11 @@ async function setContracts() {
   }
 
   document.querySelector('#request-property').onclick = async () => {
+    const selectedProperty = document.querySelector('#property-id').value;
     try {
       const checkIn = new Date(2018, 09, 10).getTime() / 1000;
       const checkOut = new Date(2018, 09, 15).getTime() / 1000;
-      const token = await propertyContract.tokenOfOwnerByIndex(alice, 0);
-      const tx = await propertyRegistryContract.request(token, checkIn, checkOut, {from: bob, gas: 250000});
-      console.log(tx);
+      const tx = await propertyRegistryContract.request(selectedProperty, checkIn, checkOut, {from: bob, gas: 250000});
       console.log('Property Request by Bob');
     } catch(e) {
       console.log(e);
@@ -59,11 +59,20 @@ async function setContracts() {
       console.log('watch error', err)
     else
       handleEvent(res);
-      console.log('got an event', res)
+      console.log('got a property event', res)
+  });
+
+  const registryEvents = propertyRegistryContract.allEvents({ fromBlock: 0, toBlock: 'latest' });
+  registryEvents.watch((err, res) => {
+    if (err)
+      console.log('watch error', err)
+    else
+      handleEvent(res);
+      console.log('got a registry event', res)
   });
 
   async function handleEvent(res) {
-    if (res.event == "Transfer") {
+    if (res.event == "Registered") {
       getStayData(res.args._tokenId);
     }
   }
@@ -77,28 +86,28 @@ async function setContracts() {
       const propertyDiv = document.createElement("div");
       propertyDiv.className = "property";
       propertyDiv.appendChild(document.createTextNode("Property " + tokenId));
+      const priceElement = document.createElement("p");
+      priceElement.className = "price";
+      priceElement.innerHTML = "Price " + tx[0];
+      propertyDiv.appendChild(priceElement);
       tx[2].forEach(function(element) {
         requestElement = document.createElement("p");
         requestElement.className = "request";
         requestElement.innerHTML = "Request " + element;
-        propertyDiv.appendChild(priceElement);
+        propertyDiv.appendChild(requestElement);
       });
-      priceElement = document.createElement("p");
-      priceElement.className = "price";
-      priceElement.innerHTML = "Price " + tx[0];
-      propertyDiv.appendChild(priceElement);
       document.querySelector('#property-list').appendChild(propertyDiv);
       console.log(tx);
       console.log('Got stay data for Alice');
     } catch(e) {
-      // console.log(e);
+      console.log(e);
       alert('Error getting stay data', e)
     }
   }
 
-  async function registerProperty(tokenId) {
+  async function registerProperty(tokenId, price) {
     try {
-      const tx = await propertyRegistryContract.registerProperty(tokenId, 150, {from: alice, gas: 250000});
+      const tx = await propertyRegistryContract.registerProperty(tokenId, price, {from: alice, gas: 250000});
       console.log('Property Registered for Alice');
     } catch(e) {
       console.log(e);
@@ -108,4 +117,3 @@ async function setContracts() {
 }
 
 setContracts();
-
