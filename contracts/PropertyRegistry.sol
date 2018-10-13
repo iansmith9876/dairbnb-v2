@@ -96,4 +96,14 @@ contract PropertyRegistry {
     emit CheckOut(_tokenId);
   }
 
+  function getStayData(uint256 _tokenId) external view returns (uint256, uint256, address[], address[], address) {
+    return (
+      stayData[_tokenId].price,
+      stayData[_tokenId].stays,
+      stayData[_tokenId].requested,
+      stayData[_tokenId].approved,
+      stayData[_tokenId].occupant
+    );
+  }
+
 }

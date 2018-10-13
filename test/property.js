@@ -51,4 +51,9 @@ contract('Property Contract Tests', function(accounts) {
       assert(true, 'Bob was not able to set a property uri');
     }
   });
+
+  it('should return owned tokens', async () => {
+    const properties = await property.getProperties({ from: alice });
+    assert(properties.length == 2, 'Tokens were not returned');
+  });
 });
