@@ -1,7 +1,7 @@
 !!!
 %html
   %head
-    %title Dairbnb
+    %title Dashboard - Dairbnb
     %link{href: "app/stylesheets/main.css", rel: "stylesheet", type: "text/css"}
     %link{href: "https://fonts.googleapis.com/css?family=Noto+Sans:400,700", rel: "stylesheet"}
     %script{src: "app/javascript/web3.js-0.20.6/dist/web3.js"}
@@ -12,14 +12,16 @@
       %a.brand{href: "/"} Dairbnb
       %a.account{href:"/dashboard"} Dashboard
 
-    %section.container.landing
-      %h1.tagline Decentralized Airbnb
+    %section.container
+      %h2 Register A New Property
+      %label Name
+      %input#property-name
+      %label Price
+      %input#property-price
+      %button#create-property Create Property
 
     %section.container
-      %h2 Browse Properties
-      %div#property-list
-      %label Property
-      %input#property-id
-      %button#request-property Request Property
+      %h2 My Properties
+      %div#my-property-list
 
     %script{src: "/app/javascript/main.js"}

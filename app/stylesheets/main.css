@@ -6,6 +6,7 @@ body {
   margin: 0;
   position: relative;
   min-height: 100%;
+  font-family: 'Noto Sans', sans-serif;
 }
 
 nav {
@@ -13,18 +14,51 @@ nav {
   border-bottom: 1px solid #e9e9e9;
 }
 
+.account {
+  float: right;
+  margin: 0 1em 0 1em;
+  line-height: 56px;
+  text-decoration: none;
+  color: #000;
+}
+
 .brand {
   line-height: 56px;
   margin-left: 1em;
-  font-size: 2em;
+  font-size: 1.5em;
+  text-decoration: none;
+  color: #000;
+  font-weight: 700;
 }
 
 .container {
   padding: 1em;
-  border-bottom: 1px solid #e9e9e9;
 }
 
-#property-list {
+.landing {
+  height: 200px;
+  text-align: center;
+  background-image: url(../images/house.jpg);
+  background-repeat:no-repeat;
+  background-position: center;
+  background-size: 100% auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tagline {
+  font-weight: 400;
+  font-size: 2em;
+  margin: 0;
+  background-color: #fff;
+  display: inline;
+  padding: 0.1em 0.5em;
+  box-shadow: 0 4px 6px rgba(50,50,93,.11),0 1px 3px rgba(0,0,0,.08);
+  border-radius: 3px;
+}
+
+#my-property-list {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-column-gap: 1em;
